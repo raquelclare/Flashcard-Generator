@@ -5,36 +5,46 @@ var BasicCard = require("./BasicCard.js");
 var ClozeCard = require("./ClozeCard.js");
 
 var inquirer = require("inquirer");
+var fs = require("fs");
 var flashcards = [];
 
-// Testing flash cards
-// var firstPresident = new BasicCard(
-//     "Who was the first president of the United States?", "George Washington");
+// Lets first ask what the user wants to do!
+function start() {
 
-// // "Who was the first president of the United States?"
-// console.log(firstPresident.front); 
+    inquirer.prompt([
 
-// // "George Washington"
-// console.log(firstPresident.back); 
+        {
 
-// var firstPresidentCloze = new ClozeCard(
-//     "George Washington was the first president of the United States.", "George Washington");
+            type: "list",
+            message: "What would you like to do?",
+            choices: ["Create flashcards", "Review flashcards", "Quiz me"],
+            name: "choices"
 
-// // "George Washington"
-// console.log(firstPresidentCloze.cloze); 
+        }
+    ]).then(function (user) {
 
-// // " ... was the first president of the United States.
-// console.log(firstPresidentCloze.partial); 
+        var choice = user.choices;
 
-// // "George Washington was the first president of the United States.
-// console.log(firstPresidentCloze.fullText);
+        switch (choice) {
+            case "Create flashcards":
+                create();
+                break;
 
-// // Should throw or log an error because "oops" doesn't appear in "This doesn't work"
-// var brokenCloze = new ClozeCard("This doesn't work", "oops");
+            case "Review flashcards":
+                displayFlashcards();
+                break;
 
+            case "Quiz me":
+                quiz();
+                break;
+        }
+    });
+}
+
+// Creating a flash card
 function create() {
 
-    inquirer.prompt ([
+    inquirer.prompt([
 
         {
             type: "list",
@@ -43,15 +53,15 @@ function create() {
             name: "flashcardType"
 
         }
-    ]).then(function(user) {
-        if (user.flashcardType === "Basic flashcards"){
+    ]).then(function (user) {
+        if (user.flashcardType === "Basic flashcards") {
             console.log("Creating a basic flashcard...");
 
             inquirer.prompt([
 
                 {
                     type: "input",
-                    message: "Flashcard question:", 
+                    message: "Flashcard question:",
                     name: "front"
 
                 },
@@ -61,11 +71,15 @@ function create() {
                     message: "Flashcard answer:",
                     name: "back"
                 }
-            ]).then(function(basicUser){
+            ]).then(function (basicUser) {
 
                 var flashcard = new BasicCard(basicUser.front, basicUser.back);
 
                 flashcards.push(flashcard);
+
+                deck();
+
+                console.log(flashcard);
 
                 console.log("New flashcard created!");
 
@@ -80,7 +94,7 @@ function create() {
 
                 {
                     type: "input",
-                    message: "Flashcard fact: (ex. George Washington was the first president of the United States)", 
+                    message: "Flashcard fact: (ex. George Washington was the first president of the United States)",
                     name: "text"
 
                 },
@@ -90,11 +104,13 @@ function create() {
                     message: "Which part of the fact you would like to omit:",
                     name: "cloze"
                 }
-            ]).then(function(clozeUser){
+            ]).then(function (clozeUser) {
 
                 var flashcard = new ClozeCard(clozeUser.text, clozeUser.cloze);
 
                 flashcards.push(flashcard);
+
+                deck();
 
                 console.log(flashcard);
 
@@ -107,18 +123,19 @@ function create() {
     });
 }
 
+// Want to ask the user if they want to add another flashcard without having to enter in anything else in the console
 function createAnother() {
 
     inquirer.prompt([
         {
 
-            type: "list", 
+            type: "list",
             message: "Did you want to make another flashcard?",
             choices: ["Yes", "No"],
             name: "makeAnother"
 
         }
-    ]).then(function(user) {
+    ]).then(function (user) {
 
         while (user.makeAnother === "Yes") {
             create();
@@ -126,17 +143,43 @@ function createAnother() {
         }
 
         if (user.makeAnother === "No") {
-        console.log("Time to start studying!");
-
+            console.log("Time to start studying!");
+            start();
         }
     });
 }
 
-create();
+// Adds to the deck of flashcards created into the log.txt file
+function deck() {
+    // Will append the flash card to the end of the file
+    fs.appendFile("log.txt", "utf8" + flashcards, function (err) {
+        if (err) {
+            return console.log(err);
+        }
 
-// Will need a log.txt file for this
-function displayFlashcards() {
-    return console.log(flashcards);
+    });
 }
 
-displayFlashcards();
+// Allows user to see all of the flashcards created by reading and spitting out contents of the log.txt file
+function displayFlashcards() {
+
+    fs.readFile("log.txt", "utf8", function (err, data) {
+        if (err) {
+            return console.log(err);
+        }
+
+        data = data.split(" ////// ");
+
+        for (var i = 0; i < data.length; i++) {
+            console.log(flashcards);
+        }
+    });
+}
+
+// Allows users to study!
+function quiz() {
+    console.log("work in progress");
+}
+
+// That callback though
+start();
