@@ -33,6 +33,7 @@ var flashcards = [];
 // var brokenCloze = new ClozeCard("This doesn't work", "oops");
 
 function create() {
+
     inquirer.prompt ([
 
         {
@@ -68,6 +69,8 @@ function create() {
 
                 console.log("New flashcard created!");
 
+                createAnother();
+
             });
 
         } else if (user.flashcardType === "Cloze flashcards") {
@@ -97,7 +100,34 @@ function create() {
 
                 console.log("New flashcard created!");
 
+                createAnother();
+
             });
+        }
+    });
+}
+
+function createAnother() {
+
+    inquirer.prompt([
+        {
+
+            type: "list", 
+            message: "Did you want to make another flashcard?",
+            choices: ["Yes", "No"],
+            name: "makeAnother"
+
+        }
+    ]).then(function(user) {
+
+        while (user.makeAnother === "Yes") {
+            create();
+            break;
+        }
+
+        if (user.makeAnother === "No") {
+        console.log("Time to start studying!");
+
         }
     });
 }
